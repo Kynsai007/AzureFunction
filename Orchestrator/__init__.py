@@ -17,9 +17,9 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     try:
         file_data = context.get_input()
         result3 = {}
-        result1 = yield context.call_activity('Pre-Processing', json.dumps(file_data))
+        result1 = yield context.call_activity('Prebuilt-Model-Activity', json.dumps(file_data))
         if json.loads(result1)['message'] == 'success':
-            result2 = yield context.call_activity('Information-Extractor', result1)
+            result2 = yield context.call_activity('Custom-Model-Activity', result1)
             if json.loads(result2)['message'] == 'success':
                 result3 = yield context.call_activity('Business-Logic-Activity', result2)
             else:
