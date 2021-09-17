@@ -6,7 +6,7 @@
 # - add azure-functions-durable to requirements.txt
 # - run pip install -r requirements.txt
 
-import logging,json,os
+import logging,json,os,sys
 from . import util
 from . import formrecognizer
 def main(name: str) -> str:
@@ -22,7 +22,12 @@ def main(name: str) -> str:
         supplier_name = model_info[1]
         file_data = model_data['file_info']
         metadata = file_data[0]
-        file_url = file_data[1]    
+        file_url = file_data[1] 
+        st_info = model_data['st_info']
+        fr_info = model_data['fr_info']
+        fr_endpoint = fr_info[0]
+        fr_key = fr_info[1]
+        fr_version = fr_info[2]   
         status, body = util.preprocess(metadata[1], file_url, metadata[0])
 
         if not status:
@@ -30,11 +35,11 @@ def main(name: str) -> str:
         fr_headers = {
             "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36",
             "Content-Type": metadata[0],
-            "Ocp-Apim-Subscription-Key": os.environ['FORM_RECOGNIZER_KEY'],
+            "Ocp-Apim-Subscription-Key": fr_key,
         }
-        url = f"{os.environ['FORM_RECOGNIZER_URL']}/formrecognizer/{os.environ['FORM_RECOGNIZER_VERSION']}/custom/models/{model_id}/analyze?includeTextDetails=false"
+        url = f"{fr_endpoint}/formrecognizer/{fr_version}/custom/models/{model_id}/analyze?includeTextDetails=false"
         custom_result = formrecognizer.getOCRText(url,fr_headers,body)
-        custom_fields = {'Bill of Lading':{'BL_Shipper':'','BL_Consignee':'','BL_Notify1':'','BL_Notify2':'','BL_Number':'','BL_Date':'','BL_Final_Destination':''},'Certificate of Origin':{'COO_Shipper':'','COO_Notify1':'','COO_Notify2':'','COO_Consignee':'','COO_Number':'','COO_Date':'','COO_Country':'','COO_Inv_Number':'','COO_Inv_Date':''},'Commercial Invoice':{'CI_Shipper':'','CI_Consignee':'','CI_Notify1':'','CI_Notify2':'','CI_ASN_Number':'','CI_Number':'','CI_Date':'','CI_Payment_Term':'','CI_Incoterm':'','CI_Country':'','CI_Final_Destination':'','CI_Inv_Number':'','CI_Inv_Date':''},'Summary Packing List':{'SPL_Shipper':'','SPL_Consignee':'','SPL_Notify1':'','SPL_Notify2':'','SPL_Inv_Number':'','SPL_Inv_Date':''}}
+        custom_fields = {'Bill of Lading':{'BL_Shipper':'','BL_Consignee':'','BL_Notify1':'','BL_Notify2':'','BL_Number':'','BL_Date':'','BL_Final_Destination':'','BL_Table_Details':[]},'Certificate of Origin':{'COO_Shipper':'','COO_Notify1':'','COO_Notify2':'','COO_Consignee':'','COO_Number':'','COO_Date':'','COO_Country':'','COO_Inv_Number':'','COO_Inv_Date':'','COO_Table_Details':[]},'Commercial Invoice':{'CI_Shipper':'','CI_Consignee':'','CI_Notify1':'','CI_Notify2':'','CI_ASN_Number':'','CI_Number':'','CI_Date':'','CI_Payment_Term':'','CI_Incoterm':'','CI_Country':'','CI_Final_Destination':'','CI_Inv_Number':'','CI_Inv_Date':'','CI_Table_Details':[]},'Summary Packing List':{'SPL_Shipper':'','SPL_Consignee':'','SPL_Notify1':'','SPL_Notify2':'','SPL_Inv_Number':'','SPL_Inv_Date':'','SPL_Table_Details':[],'SPL_Table_Details_1':[]}}
         CustomdocumentResults = custom_result["analyzeResult"]["documentResults"]
         for item in CustomdocumentResults:
             fields = item['fields']
@@ -155,25 +160,28 @@ def main(name: str) -> str:
             #Tabular Data
             if "BL_Table_Details" in fields:
                 if len(fields['BL_Table_Details']['valueArray']) > 0:
-                    custom_fields['Bill of Lading']['BL_Table_Details'] = [{h:k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['BL_Table_Details']['valueArray']]
+                    custom_fields['Bill of Lading']['BL_Table_Details'] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['BL_Table_Details']['valueArray']]
             if "CI_Table_Details" in fields:
                 if len(fields['CI_Table_Details']['valueArray']) > 0:
-                    custom_fields['Commercial Invoice']['CI_Table_Details'] = [{h:k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['CI_Table_Details']['valueArray']]
+                    custom_fields['Commercial Invoice']['CI_Table_Details'] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['CI_Table_Details']['valueArray']]
+                        
             
             if "SPL_Table_Details" in fields:
                 if len(fields['SPL_Table_Details']['valueArray']) > 0:
-                    custom_fields['Summary Packing List']['SPL_Table_Details'] = [{h:k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['SPL_Table_Details']['valueArray']]
+                    custom_fields['Summary Packing List']['SPL_Table_Details'] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['SPL_Table_Details']['valueArray']]
             
             if "SPL_Table_Details_1" in fields:
                 if len(fields['SPL_Table_Details_1']['valueArray']) > 0:
-                    custom_fields['Summary Packing List']['SPL_Table_Details_1'] = [{h:k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['SPL_Table_Details_1']['valueArray']]
+                    custom_fields['Summary Packing List']['SPL_Table_Details_1'] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['SPL_Table_Details_1']['valueArray']]
             
             if "COO_Table_Details" in fields:
                 if len(fields['COO_Table_Details']['valueArray']) > 0:
-                    custom_fields['Certificate of Origin']['COO_Table_Details'] = [{h:k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['COO_Table_Details']['valueArray']]
+                    custom_fields['Certificate of Origin']['COO_Table_Details'] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields['COO_Table_Details']['valueArray']]
             
             
             return json.dumps({"message":"success","custom_result":custom_fields,"ocr_text":ocr_text,"supplier_name":supplier_name})
     except Exception as e:
-        logging.info(f"Exception in Imformation Extraction {e}")
-        return json.dumps({"message":"exception","custom_result":custom_fields,"ocr_text":ocr_text,"supplier_name":supplier_name})
+        exception_type, exception_object, exception_traceback = sys.exc_info()
+        line_number = exception_traceback.tb_lineno
+        logging.info(f"Exception in Imformation Extraction {e} - {line_number}")
+        return json.dumps({"message":"failure in information extraction","custom_result":custom_fields,"ocr_text":ocr_text,"supplier_name":supplier_name})

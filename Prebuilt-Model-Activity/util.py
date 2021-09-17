@@ -10,10 +10,7 @@ from azure.cosmosdb.table.tableservice import TableService
 from fuzzywuzzy import fuzz
 
 # table_service = TableService(account_name=os.environ['STORAGE_ACCOUNT_NAME'], account_key=os.environ['STORAGE_ACCOUNT_KEY'])
-table_service = TableService(
-    account_name="frtrainingstorage001",
-    account_key="uYwwjEgKml/k8UxtW/DRaGE7ILMYJSWH4YyCRLPFDvYi0+0UXHTs4EeBAgBuYxT4SHiBWIwk/NL7csNq0mU6Sw==",
-)
+
 accepted_inch = 5 * 72
 accepted_pixel_max = 8000
 accepted_pixel_min = 50
@@ -21,6 +18,7 @@ accepted_filesize_max = 50
 
 def preprocess(file_name, file_url, file_type):
     try:
+        
         global accepted_inch, accepted_pixel_max, accepted_pixel_min, accepted_filesize_max
         res = requests.get(file_url)
         file_bytes = BytesIO(res.content)
@@ -79,8 +77,12 @@ def preprocess(file_name, file_url, file_type):
         return False, b""
 
 
-def identify_supplier_model(ocr_text):
+def identify_supplier_model(ocr_text,st_name,st_key):
     try:
+        table_service = TableService(
+            account_name=st_name,
+            account_key=st_key
+        )
         suppliers = table_service.query_entities("supplierlist")
         supplier_list = []
         supplier_name = ""

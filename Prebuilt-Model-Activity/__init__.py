@@ -15,6 +15,12 @@ def main(name: str) -> str:
         file_data = json.loads(name)
         metadata = file_data['metadata']
         file_url = file_data['file_url']    
+        st_name = file_data['st_name']
+        st_key = file_data['st_key']
+        fr_key = file_data['fr_key']
+        fr_endpoint = file_data['fr_endpoint']
+        fr_version = file_data['fr_version']
+        fr_doctype = file_data['fr_doctype']
         status, body = util.preprocess(metadata[1], file_url, metadata[0])
 
         if not status:
@@ -22,15 +28,15 @@ def main(name: str) -> str:
         fr_headers = {
             "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36",
             "Content-Type": metadata[0],
-            "Ocp-Apim-Subscription-Key":  os.environ['FORM_RECOGNIZER_KEY'],
+            "Ocp-Apim-Subscription-Key":  fr_key,
         }
-        url = f"{os.environ['FORM_RECOGNIZER_URL']}/formrecognizer/{os.environ['FORM_RECOGNIZER_VERSION']}/prebuilt/{os.environ['FORM_RECOGNIZER_DOCTYPE']}/analyze?includeTextDetails=true"
+        url = f"{fr_endpoint}formrecognizer/{fr_version}/prebuilt/{fr_doctype}/analyze?includeTextDetails=true"
         prebuilt_result = formrecognizer.getOCRText(url,fr_headers,body)
         ocr_text = "#splitter#".join([k["text"].replace('"', '') for i in prebuilt_result[
                                             "analyzeResult"]['readResults'] if 'lines' in i for k in i['lines']])
-        model_id, supplier_name, template_change = util.identify_supplier_model(ocr_text)
+        model_id, supplier_name, template_change = util.identify_supplier_model(ocr_text,st_name,st_key)
         
-        return json.dumps({"message":"success","ocr_text":ocr_text,"model_info":(model_id,supplier_name,template_change),"file_info":(metadata,file_url)})
+        return json.dumps({"message":"success","ocr_text":ocr_text,"model_info":(model_id,supplier_name,template_change),"file_info":(metadata,file_url),"st_info":(st_name,st_key),"fr_info":(fr_endpoint,fr_key,fr_version)})
     except Exception as e:
         logging.info(f"Exception in Pre-Processing {e}")
-        return json.dumps({"message":"failure","ocr_text":""})
+        return json.dumps({"message":"failure in pre-processing","ocr_text":""})
