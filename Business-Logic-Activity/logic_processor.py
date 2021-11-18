@@ -8,6 +8,7 @@ def process_logic(flow_obj,logic_types,custom_result):
     global loc
     output = {}
     sourceobj = list(filter(lambda v : v['source'] == 'source',flow_obj))
+    previous_val = ""
     for s in sourceobj:
         if s['type'] != 'field':
             logic_script = logic_types[s['type']]
