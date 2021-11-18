@@ -90,16 +90,15 @@ def identify_supplier_model(ocr_text,st_name,st_key):
         Synonyms_Ratio_Table = {}
         Ratio_Table = {}
         supplier_found_from_syn = False
-        template_change = False
         for supplier in suppliers:
             try:
                 ast.literal_eval(supplier["Synonyms"])
                 supplier_list.append(
-                    (supplier["SupplierName"], ast.literal_eval(supplier["Synonyms"]))
+                    (supplier["TemplateName"], ast.literal_eval(supplier["Synonyms"]))
                 )
             except Exception as e:
-                exc = f"Error in synonyms for Supplier:- {supplier['SupplierName']}"
-                logging.warning(f"Error in synonium of Supplier:- {supplier['SupplierName']}")
+                exc = f"Error in synonyms for Supplier:- {supplier['TemplateName']}"
+                logging.warning(f"Error in synonium of Supplier:- {supplier['TemplateName']}")
         ocr_text_list = ocr_text.split("#splitter#")
         for k in ocr_text_list:
             for x in supplier_list:
@@ -173,23 +172,18 @@ def identify_supplier_model(ocr_text,st_name,st_key):
             supplier_name = supplier_name.strip()
             supplierConfidenceValue = int(supplier_list_confidence[supplier_name])
             logging.info(f"{supplier_name} first by Fuzzywuzzy")
-        if supplierConfidenceValue < 80:
-            template_change = True
-            supplier_name = ""
-            model_id = False
-        else:
-            supplier_model = table_service.query_entities(
-                "supplierlist", filter=f"SupplierName eq '{supplier_name}'"
-            )
-            # logging.info(f"Got {len(list(supplier_model))}")
-            for model in supplier_model:
-                model_id = str(model.ModelId).strip()
-                break
+        supplier_model = table_service.query_entities(
+            "supplierlist", filter=f"TemplateName eq '{supplier_name}'"
+        )
+        # logging.info(f"Got {len(list(supplier_model))}")
+        for model in supplier_model:
+            model_id = str(model.RowKey).strip()
+            break
         logging.info(f"Model id {model_id}")
-        return model_id, supplier_name, template_change
+        return model_id, supplier_name
     except Exception as e:
         logging.error(f"Exception at util.py {str(e)}")
-        return False, "", True
+        return False, ""
         # exc_type, exc_obj, exc_tb = sys.exc_info()
         # logging.info(exc_type, exc_tb.tb_lineno, str(e))
         # return "", ""

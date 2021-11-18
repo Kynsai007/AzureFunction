@@ -12,6 +12,7 @@ import azure.durable_functions as df
 async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     try:
         body = req.get_json()
+        logging.info(f"Recieved {body}")
         client = df.DurableOrchestrationClient(starter)
         instance_id = await client.start_new(req.route_params["functionName"], None, body)
 
@@ -19,4 +20,4 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         return client.create_check_status_response(req, instance_id)
     except Exception as e:
         logging.info(f"Exception in process-doc {e}")
-        return func.HttpResponse(json.dumps({'message':f'exception due to {e}'}), status_code=500)
+        return func.HttpResponse(json.dumps({'message':f'exception in http started,reason : {e}','custom_result':{}}), status_code=500)
