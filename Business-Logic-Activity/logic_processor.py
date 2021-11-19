@@ -20,7 +20,7 @@ def process_logic(flow_obj,logic_types,custom_result):
             logic_script = logic_types[s['type']]
             value = custom_result[s['target'].split("-")[1]]
             format = s['format']
-            previous_val = s['value']
+            previous_val = value
             exec(logic_script,{'val':value,'format':format,'previous_val':previous_val,'datetime':datetime,'parser':parser,'re':re},loc)
             output = getvaluefornode(flow_obj,logic_types,custom_result,s['target'],loc['output']) 
     return output

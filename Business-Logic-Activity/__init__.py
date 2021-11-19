@@ -16,7 +16,10 @@ def main(name: str) -> str:
         business_logic_flow = json.loads(data['business_logic_flow'])
         components = data['componenttypes']
         logging.info(f"business_logic {type(business_logic_flow)}, components : {type(components)}, custom_fields : {type(custom_result)}")
-        custom_result = logic_processor.process_logic(business_logic_flow,components,custom_result)
+        if len(components.keys()) == 1 and 'field' in components.keys():
+            custom_result = custom_result
+        else:
+            custom_result = logic_processor.process_logic(business_logic_flow,components,custom_result)
         return json.dumps({"message":"success","custom_result":custom_result})
     except Exception as e:
         exception_type, exception_object, exception_traceback = sys.exc_info()
