@@ -50,7 +50,7 @@ def getvaluefornode(flow_obj,logic_types,custom_result,target,first_node_val,ism
                 format = s['format']
                 logic_script = logic_types[s['type']]
                 exec(logic_script,{'val':value,'format':format,'previous_val':previous_val,'datetime':datetime,'parser':parser,'re':re},loc)
-                getvaluefornode(flow_obj,logic_types,custom_result,s['target'],loc['output'])
+                getvaluefornode(flow_obj,logic_types,custom_result,s['target'],loc['output'],ismultiple)
             else:
                 active_field = s['target'].split("-")[1]
                 if ismultiple == False:
@@ -62,5 +62,5 @@ def getvaluefornode(flow_obj,logic_types,custom_result,target,first_node_val,ism
                 format = s['format']
                 logic_script = logic_types[s['type']]
                 exec(logic_script,{'val':value,'format':format,'previous_val':previous_val,'datetime':datetime,'parser':parser,'re':re},loc)
-                getvaluefornode(flow_obj,logic_types,custom_result,s['target'],loc['output'])
+                getvaluefornode(flow_obj,logic_types,custom_result,s['target'],loc['output'],ismultiple)
     return fields
