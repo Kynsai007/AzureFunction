@@ -48,7 +48,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             fr_key = file_data['fr_key']
             fr_endpoint = file_data['fr_endpoint']
             fr_version = file_data['fr_version']
-            result1 = json.dumps({"message":"success","ocr_text":"","model_info":(model_id,supplier_name),"file_info":(metadata,file_url),"st_info":(st_name,st_key),"fr_info":(fr_endpoint,fr_key,fr_version),"fields":fields})
+            ismultiple = file_data['ismultiple']
+            business_logic_flow = file_data['business_logic_flow']
+            componenttypes = file_data['componenttypes']
+            result1 = json.dumps({"message":"success","ocr_text":"","model_info":(model_id,supplier_name),"file_info":(metadata,file_url),"st_info":(st_name,st_key),"fr_info":(fr_endpoint,fr_key,fr_version),"fields":fields,"use_prebuilt":use_prebuilt,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes,"ismultiple":ismultiple})
             result2 = yield context.call_activity('Custom-Model-Activity', result1)
             if json.loads(result2)['message'] == 'success':
                 result3 = yield context.call_activity('Business-Logic-Activity',result2)

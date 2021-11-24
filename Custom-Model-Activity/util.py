@@ -18,16 +18,6 @@ accepted_pixel_min = 50
 accepted_filesize_max = 50
 
 
-def get_fields_obj(fields):
-    fields = json.loads(fields)
-    custom_obj = {}
-    for f in fields['fields']:
-        if f['fieldType'] == 'string':
-            custom_obj[f['fieldKey']] = ''
-        else:
-            custom_obj[f['fieldKey']] = []
-    return custom_obj
-    
 def preprocess(file_name, file_url, file_type):
     try:
         global accepted_inch, accepted_pixel_max, accepted_pixel_min, accepted_filesize_max

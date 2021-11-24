@@ -11,7 +11,7 @@ from . import util
 from . import formrecognizer
 def main(name: str) -> str:
     model_data = json.loads(name)
-    custom_fields = util.get_fields_obj(model_data['fields'])
+    custom_fields = json.loads(model_data['fields'])
     supplier_name = ''    
     ocr_text = ''
     business_logic_flow = []
@@ -28,6 +28,7 @@ def main(name: str) -> str:
         use_prebuilt = model_data['use_prebuilt']
         business_logic_flow = model_data['business_logic_flow']
         componenttypes= model_data['componenttypes']
+        ismultiple = model_data['ismultiple']
         fr_info = model_data['fr_info']
         fr_endpoint = fr_info[0]
         fr_key = fr_info[1]
@@ -51,14 +52,25 @@ def main(name: str) -> str:
         for item in CustomdocumentResults:
             fields = item['fields']
             #Text Fields
-            for key, value in custom_fields.items():
-                if key in fields:
-                    if value == "":
-                        if "text" in fields[key]:
-                            custom_fields[key] = fields[key]['text']
-                    else:
-                        if len(fields[key]['valueArray']) > 0:
-                            custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]
+            if ismultiple == False:
+                for key, value in custom_fields.items():
+                    if key in fields:
+                        if value == "":
+                            if "text" in fields[key]:
+                                custom_fields[key] = fields[key]['text']
+                        else:
+                            if len(fields[key]['valueArray']) > 0:
+                                custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]
+            else:
+                for key, value in custom_fields.items():
+                    if key in fields:
+                        if value == "":
+                            if "text" in fields[key]:
+                                custom_fields[key] = fields[key]['text']
+                        else:
+                            if len(fields[key]['valueArray']) > 0:
+                                custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]               
+        
         logging.info(f"Custom fields {custom_fields}")
         return json.dumps({"message":"success","custom_result":custom_fields,"ocr_text":ocr_text,"template_name":supplier_name,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes})
     except Exception as e:

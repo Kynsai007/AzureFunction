@@ -23,6 +23,7 @@ def main(name: str) -> str:
         fr_doctype = file_data['fr_doctype']
         fields = file_data['fields']
         use_prebuilt = file_data['use_prebuilt']
+        ismultiple = file_data['ismultiple']
         business_logic_flow = file_data['business_logic_flow']
         componenttypes = file_data['componenttypes']
         status, body = util.preprocess(metadata[1], file_url, metadata[0])
@@ -39,7 +40,7 @@ def main(name: str) -> str:
         ocr_text = "#splitter#".join([k["text"].replace('"', '') for i in prebuilt_result[
                                             "analyzeResult"]['readResults'] if 'lines' in i for k in i['lines']])
         model_id, supplier_name = util.identify_supplier_model(ocr_text,st_name,st_key)
-        return json.dumps({"message":"success","ocr_text":ocr_text,"model_info":(model_id,supplier_name),"file_info":(metadata,file_url),"st_info":(st_name,st_key),"fr_info":(fr_endpoint,fr_key,fr_version),"fields":fields,"use_prebuilt":use_prebuilt,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes})
+        return json.dumps({"message":"success","ocr_text":ocr_text,"model_info":(model_id,supplier_name),"file_info":(metadata,file_url),"st_info":(st_name,st_key),"fr_info":(fr_endpoint,fr_key,fr_version),"fields":fields,"use_prebuilt":use_prebuilt,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes,"ismultiple":ismultiple})
     except Exception as e:
         logging.info(f"Exception in Prebuilt Model Activity {e}")
         return json.dumps({"message":f"exception in prebuilt model activity, reason: {e}","ocr_text":"","custom_result":{}})
