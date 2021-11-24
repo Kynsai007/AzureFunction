@@ -12,6 +12,7 @@ from . import logic_processor
 def main(name: str) -> str:
     data = json.loads(name)
     custom_result = data['custom_result']
+    ismultiple = data['ismultiple']
     try:
         business_logic_flow = json.loads(data['business_logic_flow'])
         components = data['componenttypes']
@@ -19,7 +20,7 @@ def main(name: str) -> str:
         if len(components.keys()) == 1 and 'field' in components.keys():
             custom_result = custom_result
         else:
-            custom_result = logic_processor.process_logic(business_logic_flow,components,custom_result)
+            custom_result = logic_processor.process_logic(business_logic_flow,components,custom_result,ismultiple)
         return json.dumps({"message":"success","custom_result":custom_result})
     except Exception as e:
         exception_type, exception_object, exception_traceback = sys.exc_info()

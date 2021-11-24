@@ -63,16 +63,17 @@ def main(name: str) -> str:
                                 custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]
             else:
                 for key, value in custom_fields.items():
-                    if key in fields:
-                        if value == "":
-                            if "text" in fields[key]:
-                                custom_fields[key] = fields[key]['text']
-                        else:
-                            if len(fields[key]['valueArray']) > 0:
-                                custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]               
+                    for k,v in custom_fields[key].items():
+                        if k in fields:
+                            if v == "":
+                                if "text" in fields[k]:
+                                    custom_fields[key][k] = fields[key]['text']
+                            else:
+                                if len(fields[k]['valueArray']) > 0:
+                                    custom_fields[key][k] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]               
         
         logging.info(f"Custom fields {custom_fields}")
-        return json.dumps({"message":"success","custom_result":custom_fields,"ocr_text":ocr_text,"template_name":supplier_name,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes})
+        return json.dumps({"message":"success","custom_result":custom_fields,"ocr_text":ocr_text,"template_name":supplier_name,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes,"ismultiple":ismultiple})
     except Exception as e:
         exception_type, exception_object, exception_traceback = sys.exc_info()
         line_number = exception_traceback.tb_lineno
