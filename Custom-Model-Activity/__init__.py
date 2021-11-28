@@ -62,15 +62,16 @@ def main(name: str) -> str:
                             if len(fields[key]['valueArray']) > 0:
                                 custom_fields[key] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]
             else:
+                logging.info(f"before {custom_fields}")
                 for key, value in custom_fields.items():
-                    for k,v in custom_fields[key].items():
-                        if k in fields:
+                    for ky,v in custom_fields[key].items():
+                        if ky in fields:
                             if v == "":
-                                if "text" in fields[k]:
-                                    custom_fields[key][k] = fields[key]['text']
+                                if "text" in fields[ky]:
+                                    custom_fields[key][ky] = fields[ky]['text']
                             else:
-                                if len(fields[k]['valueArray']) > 0:
-                                    custom_fields[key][k] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[key]['valueArray']]               
+                                if len(fields[ky]['valueArray']) > 0:
+                                    custom_fields[key][ky] = [{h:None if 'text' not in k['valueObject'][h] else k['valueObject'][h]['text'] for h in k['valueObject'].keys()} for k in fields[ky]['valueArray']]               
         
         logging.info(f"Custom fields {custom_fields}")
         return json.dumps({"message":"success","custom_result":custom_fields,"ocr_text":ocr_text,"template_name":supplier_name,"business_logic_flow":business_logic_flow,"componenttypes":componenttypes,"ismultiple":ismultiple})
